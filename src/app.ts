@@ -13,7 +13,7 @@ export class App {
   }
 
   public initializeFeatures(): void {
-    this.facadeInstance.enableStyles();
-    this.facadeInstance.enableModal();
+    // this.facadeInstance.enableStyles();
+    // this.facadeInstance.enableModal();
   }
 }
