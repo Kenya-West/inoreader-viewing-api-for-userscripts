@@ -1,0 +1,15 @@
+export enum CustomEventSuffix {
+    articleAdded = "articleAdded",
+    articleNewAdded = "articleNewAdded",
+    articleReadAdded = "articleReadAdded",
+    articleMediaLoadCompleted = "articleMediaLoadCompleted",
+    articleMediaLoadFailed = "articleMediaLoadFailed",
+    articleMediaLoadSuccess = "articleMediaLoadSuccess",
+    articleNewMediaLoadCompleted = "articleNewMediaLoadCompleted",
+    articleNewMediaLoadFailed = "articleNewMediaLoadFailed",
+    articleNewMediaLoadSuccess = "articleNewMediaLoadSuccess",
+    articleReadMediaLoadCompleted = "articleReadMediaLoadCompleted",
+    articleReadMediaLoadFailed = "articleReadMediaLoadFailed",
+    articleReadMediaLoadSuccess = "articleReadMediaLoadSuccess",
+    articleModified = "articleModified",
+}

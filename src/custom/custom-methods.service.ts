@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { singleton } from "tsyringe";
+import { container, singleton } from "tsyringe";
 
-import { createCustomEventElementAddedModel } from "./models/custom-event.model";
+import { createCustomEvent, CustomEventElementAddedModel } from "./models/custom-event.model";
 import { ElementAddedModel, ElementRootModel } from "./models/element.model";
-
+import { CustomEventSuffix } from "./models/events.model";
+import { WatcherService } from "./services/watcher.service";
 
 @singleton()
 export class CustomMethodsService {
@@ -13,71 +14,37 @@ export class CustomMethodsService {
         this.init();
     }
     public init(): void {
-
-        const appState = {
-            tmObserverArticleListLinked: false,
-        };
-
-        // Select the node that will be observed for mutations
-        const targetNode = document.body;
-
-        // Options for the observer (which mutations to observe)
-        const mutationObserverGlobalConfig = {
-            attributes: false,
-            childList: true,
-            subtree: true,
-        };
-
-        const querySelectorPathArticleRoot =
-            ".article_full_contents .article_content";
-        const querySelectorArticleContentWrapper = ".article_tile_content_wraper";
-        const querySelectorArticleFooter = ".article_tile_footer";
-
-        /**
-         * Callback function to execute when mutations are observed
-         * @param mutationsList - List of mutations observed
-         * @param observer - The MutationObserver instance
-         */
-        const callback = function(mutationsList: Array<MutationRecord>, observer: MutationObserver): void {
-            for (const mutation of mutationsList) {
-                if (mutation.type === "childList") {
-                    mutation.addedNodes.forEach(function(node: Node): void {
-                        if (node.nodeType === Node.ELEMENT_NODE) {
-                            // treat node as an HTMLElement
-                            const element = node as HTMLElement;
-                            if (element.id?.indexOf("article_") !== -1 && element.classList.contains("ar")) {
-                                handleNewElement(node as HTMLElement);
-                            }
-                        }
-                    });
-                }
-            }
-        };
-
-
-        // Create an observer instance linked to the callback function
-        const mutationObserverGlobal = new MutationObserver(callback);
-
-        // Start observing the target node for configured mutations
-        mutationObserverGlobal.observe(targetNode, mutationObserverGlobalConfig);
-
-
-        // List of elements to observe (e.g., elements with class 'watch-item')
-        const elementList = [];
-
         // Function to handle new elements
-        function handleNewElement(element: HTMLElement): void {
-            elementList.push(element);
-
+        const articleCreated = (element: HTMLElement): void => {
             // Create a custom event with the element details
-            const payload = emitCustomEventElementAddedPayload(element);
-            const event = createCustomEventElementAddedModel(payload);
+            const payload = createEventPayload(element);
+            const events = this.createArticleEventFactory(payload);
 
             // Dispatch the custom event
-            document.dispatchEvent(event);
+            events.forEach((event) => {
+                document.dispatchEvent(event);
+            });
 
-            console.log(`Element added with id ${payload.details.id}`, payload);
-        }
+            // Logger.log(`Article created with id ${payload.details.id}`, "info");
+            // Logger.log(payload, "info");
+        };
+
+        const articleMediaLoaded = (element: HTMLElement, loadedSuccessfully: boolean): void => {
+            const payload = createEventPayload(element);
+            const events = this.createArticleMediaEventFactory(payload, loadedSuccessfully);
+
+            events.forEach((event) => {
+                document.dispatchEvent(event);
+            });
+
+            console.log(`Media loaded for element with id ${payload.details.id}`, payload);
+        };
+
+        const watcherService = container.resolve(WatcherService);
+        watcherService.callbackItemAnyCreated = articleCreated;
+        watcherService.callbackItemMediaLoadCompleted = articleMediaLoaded;
+        watcherService.watchNewItems();
+
 
         // Listen for custom events where consumers return modified elements
         document.addEventListener("tm_inoreader-viewing-api-for-userscripts_elementModified", (e: Event) => {
@@ -102,7 +69,7 @@ export class CustomMethodsService {
             });
         });
 
-        function emitCustomEventElementAddedPayload(element: HTMLElement): ElementRootModel<ElementAddedModel> {
+        function createEventPayload(element: HTMLElement): ElementRootModel<ElementAddedModel> {
             return {
                 details: {
                     id: element.getAttribute("data-aid")!,
@@ -112,14 +79,15 @@ export class CustomMethodsService {
                     description: element.querySelector(".article_tile_content")!.textContent!,
                     link: element.querySelector(".article_tile_title > a[href]")!.getAttribute("href")!,
                     lastUpdated: element.querySelector(".article_tile_header_date")!.textContent!,
-                    isRead: element.querySelector(".article_btns.btns_article_unread") === null,
+                    isRead: element.getAttribute("data-read") === "1" ||
+                            element.querySelector(".article_btns.btns_article_unread") === null,
                     isBookmarked: element.querySelector(".article_btns .icon-save_empty") === null,
                     feed: {
                         name: element.querySelector(".article_tile_footer_feed_title")!.textContent!,
                         href: element.querySelector(".article_tile_footer_feed_title a[href]")!.getAttribute("href")!,
                     },
                     hasVideo: element.querySelector(".article_video_div") !== null,
-                    hasImage: element.querySelector(".article_tile_picture") !== null,
+                    hasImage: element.querySelector(".article_tile_picture[style*='background-image']") !== null,
                 },
                 _meta: {
                     from: "tm_inoreader-viewing-api-for-userscripts",
@@ -128,5 +96,48 @@ export class CustomMethodsService {
                 },
             };
         }
+    }
+
+    private createArticleEventFactory(payload: ElementRootModel<ElementAddedModel>): CustomEventElementAddedModel[] {
+        const events: CustomEventElementAddedModel[] = [];
+
+        events.push(createCustomEvent(payload, CustomEventSuffix.articleAdded));
+        if (payload.details.isRead) {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleReadAdded));
+        } else {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleNewAdded));
+        }
+
+        return events;
+    }
+
+    private createArticleMediaEventFactory(
+        payload: ElementRootModel<ElementAddedModel>,
+        loadedSuccessfully: boolean): CustomEventElementAddedModel[] {
+        const events: CustomEventElementAddedModel[] = [];
+
+        events.push(createCustomEvent(payload, CustomEventSuffix.articleMediaLoadCompleted));
+        if (loadedSuccessfully) {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleMediaLoadSuccess));
+        } else {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleMediaLoadFailed));
+        }
+        if (payload.details.isRead) {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleReadMediaLoadCompleted));
+            if (loadedSuccessfully) {
+                events.push(createCustomEvent(payload, CustomEventSuffix.articleReadMediaLoadSuccess));
+            } else {
+                events.push(createCustomEvent(payload, CustomEventSuffix.articleReadMediaLoadFailed));
+            }
+        } else {
+            events.push(createCustomEvent(payload, CustomEventSuffix.articleNewMediaLoadCompleted));
+            if (loadedSuccessfully) {
+                events.push(createCustomEvent(payload, CustomEventSuffix.articleNewMediaLoadSuccess));
+            } else {
+                events.push(createCustomEvent(payload, CustomEventSuffix.articleNewMediaLoadFailed));
+            }
+        }
+
+        return events;
     }
 }

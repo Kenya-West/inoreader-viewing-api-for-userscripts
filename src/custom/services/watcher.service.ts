@@ -2,9 +2,8 @@ import { singleton } from "tsyringe";
 
 @singleton()
 export class WatcherService {
-    public callbackItemAdded: ((element: HTMLElement) => void) | undefined;
-    public callbackItemMediaSuccessfullyLoaded: ((element: HTMLElement) => void) | undefined;
-    public callbackItemMediaFailedToLoad: ((element: HTMLElement) => void) | undefined;
+    public callbackItemAnyCreated: ((element: HTMLElement) => void) | undefined;
+    public callbackItemMediaLoadCompleted: ((element: HTMLElement, loadedSuccessfully: boolean) => void) | undefined;
 
     public watchNewItems(): void {
         // Select the node that will be observed for mutations
@@ -30,8 +29,12 @@ export class WatcherService {
                             // treat node as an HTMLElement
                             const element = node as HTMLElement;
                             if (element.id?.indexOf("article_") !== -1 && element.classList.contains("ar")) {
-                                if (this.callbackItemAdded) {
-                                    this.callbackItemAdded(element);
+                                if (this.callbackItemAnyCreated) {
+                                    this.callbackItemAnyCreated(element);
+
+                                    if (this.callbackItemMediaLoadCompleted && element?.querySelector(".article_tile_picture") !== null) {
+                                        void this.watchMediaCompletelyLoaded(element);
+                                    }
                                 }
                             }
                         }
@@ -53,19 +56,17 @@ export class WatcherService {
         if (imageElement) {
             const imageUrl = this.getImageLink(imageElement);
             if (imageUrl) {
-                const isSuccessfullyLoaded = await this.testImageLink(imageUrl);
+                const isSuccessfullyLoaded = await this.isSuccessfullyLoaded(imageUrl);
 
-                if (isSuccessfullyLoaded && this.callbackItemMediaSuccessfullyLoaded) {
-                    this.callbackItemMediaSuccessfullyLoaded(element);
-                } else if (!isSuccessfullyLoaded && this.callbackItemMediaFailedToLoad) {
-                    this.callbackItemMediaFailedToLoad(element);
+                if (this.callbackItemMediaLoadCompleted) {
+                    this.callbackItemMediaLoadCompleted(element, isSuccessfullyLoaded);
                 }
             }
         }
     }
 
     private getImageElement(element: HTMLElement): HTMLImageElement | null {
-        const divImageElement: HTMLImageElement | null = element.querySelector("a[href*='t.me'] > div[style*='background-image']");
+        const divImageElement: HTMLImageElement | null = element.querySelector(".article_tile_picture[style*='background-image']");
         return divImageElement ?? null;
     }
 
@@ -93,15 +94,15 @@ export class WatcherService {
         return imageUrl;
     }
 
-    private testImageLink(imageUrl: string): Promise<boolean> {
+    private isSuccessfullyLoaded(imageUrl: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.src = imageUrl;
             img.onload = function(): void {
-                resolve(false);
+                resolve(true);
             };
             img.onerror = function(): void {
-                resolve(true);
+                resolve(false);
             };
         });
     }
