@@ -1,7 +1,7 @@
 {
-  "name": "userscript-typescript-template-kw",
-  "version": "1.2.0",
-  "description": "Template repo using Webpack and TypeScript to build your userscript for Tampermonkey and more extensions.",
+  "name": "inoreader-viewing-api-for-userscripts",
+  "version": "0.0.1",
+  "description": "This userscript provides an API to modify the viewing experience of Inoreader",
   "main": "userscript/index.user.js",
   "scripts": {
     "build:dev": "npx cross-env ENV=development webpack",
@@ -49,7 +49,6 @@
     "typescript": "^4.5.2",
     "webpack-cli": "^4.9.1",
     "webpack": "^5.64.3",
-
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/eslint-plugin-tslint": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
@@ -73,12 +72,28 @@
     "tslint": "^6.1.3"
   },
   "userscript": {
-    "name": "Userscript TypeScript Template by Kenya-West",
+    "name": "Inoreader: viewing API for userscripts",
     "require-template": "https://cdn.jsdelivr.net/npm/${dependencyName}@${dependencyVersion}",
     "namespace": "http://tampermonkey.net/",
     "license": "https://opensource.org/licenses/MIT",
     "match": [
-      "http*://motherfuckingwebsite.com/*"
+        "https://*.inoreader.com/feed*",
+        "https://*.inoreader.com/article*",
+        "https://*.inoreader.com/folder*",
+        "https://*.inoreader.com/starred*",
+        "https://*.inoreader.com/library*",
+        "https://*.inoreader.com/dashboard*",
+        "https://*.inoreader.com/web_pages*",
+        "https://*.inoreader.com/trending*",
+        "https://*.inoreader.com/commented*",
+        "https://*.inoreader.com/recent*",
+        "https://*.inoreader.com/search*",
+        "https://*.inoreader.com/channel*",
+        "https://*.inoreader.com/teams*",
+        "https://*.inoreader.com/dashboard*",
+        "https://*.inoreader.com/pocket*",
+        "https://*.inoreader.com/liked*",
+        "https://*.inoreader.com/tags*"
     ],
     "run-at": "document-end",
     "connect": [],
