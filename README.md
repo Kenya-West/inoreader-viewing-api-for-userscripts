@@ -1,8 +1,8 @@
-# userscript-typescript-template-kw
+# inoreader-viewing-api-for-userscripts
 
-An opinionated template repo using Webpack and TypeScript to build your userscript for Tampermonkey and more extensions.
+This userscript provides an API for other userscripts to modify the viewing experience of Inoreader.
 
-Based on [pboymt/userscript-typescript-template](https://github.com/pboymt/userscript-typescript-template).
+Based on [Kenya-West/userscript-typescript-template-kw](https://github.com/Kenya-West/userscript-typescript-template-kw).
 
 ## Features
 
@@ -31,22 +31,47 @@ The project has different classes to:
 
 ## Usage
 
-### 1. Generate repostiory (two-ways)
+### API
 
-#### - Use this template to create your new repository
+This scripts produces list of events, prefixed with `tm_inoreader-viewing-api-for-userscripts_`:
 
-![](./images/github-use-template.png)
+| Event Name                        | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `articleAdded`                    | Triggered when a article is added. It appies both for new and read articles.                                       |
+| `articleNewAdded`                 | Triggered when a new article is added. |
+| `articleReadAdded`                | Triggered when an already read read article is added.                                 |
+| `articleMediaLoadCompleted`       | Triggered when the media associated with an article has finished loading. It appies both for new and read articles.   |
+| `articleMediaLoadFailed`          | Triggered when the media associated with an article has failed to load. It appies both for new and read articles.     |
+| `articleMediaLoadSuccess`         | Triggered when the media associated with an article has successfully loaded. It appies both for new and read articles.|
+| `articleNewMediaLoadCompleted`    | Triggered when the media associated with a **new** article has finished loading.|
+| `articleNewMediaLoadFailed`       | Triggered when the media associated with a **new** article has failed to load.  |
+| `articleNewMediaLoadSuccess`      | Triggered when the media associated with a **new** article has successfully loaded.|
+| `articleReadMediaLoadCompleted`   | Triggered when the media associated with a **read** article has finished loading.|
+| `articleReadMediaLoadFailed`      | Triggered when the media associated with a **read** article has failed to load. |
+| `articleReadMediaLoadSuccess`     | Triggered when the media associated with a **read** article has successfully loaded.|
+| `articleModified`                 | Triggered when an article is modified.                                      |
 
-#### - Clone this repository
+In your userscript, you can subscribe to events like this:
+
+```js
+document.addEventListener('tm_inoreader-viewing-api-for-userscripts_articleAdded', (e) => {
+    // your code
+    // All data is in `e.detail?.details`
+});
+```
+
+All data is accessed through `e.detail?.details` object. It contains `element` (`HTMLElement`) of article and various flags and text data of the article. Look into [element.model.ts](https://github.com/Kenya-West/inoreader-viewing-api-for-userscripts/blob/master/src/custom/models/element.model.ts#L6) file to see which fields are available to read.
+
+### Development
+
+- Clone this repository
 
 ```powershell
 # Use Github CLI
-$ gh repo clone kenya-west/userscript-typescript-template-kw
+$ gh repo clone kenya-west/inoreader-viewing-api-for-userscripts
 # Or use 'git clone' command directly
-$ git clone https://github.com/Kenya-West/userscript-typescript-template-kw.git
+$ git clone https://github.com/Kenya-West/inoreader-viewing-api-for-userscripts.git
 ```
-
-### 2. Development
 
 1. Install dependencies with `npm ci`.
 2. Edit settings in `userscript` object in [`package.json`](./package.json), you can refer to the comments in [`plugins/userscript.plugin.ts`](./plugins/userscript.plugin.ts).
@@ -70,22 +95,7 @@ You can push your userscript to [Github](https://github.com) and import it to [G
 
 ## Roadmap
 
-### ✅ Add proper DI, or prefer `static` classes
-
-Now solved. Classes use `tsyringe` library to get instatiated.
-
-### 🕒 Make repository-based method to store custom ids of elements
-
-If you create elements, you need to remember which strings to use. You can confuse them. Make a way to pre-define and reuse strings of ids of custom HTML elements.
-
-### 🕒 Do we need abstract classes of custom elements?
-
-Currently, to create a custom HTML element, you need to create an abstract class, then a base class, and then finally, final class of your element. Why do we need 3 steps to make it?
-
-### 🕒 Make generic HTML element
-
-Some HTML element just need a base control methods and that's it. Make a general custom HTML element class.
-
-### 🕒 Make a wiki with how-to section
-
-Strangers may be lost with so many classes. What the proper way to create custom HTML element? How to add custom styles? How to add support for custom file types? Add an action? What is this for? This is where ~~the fun begins~~ we need clear misunderstanding.
+### 🕒 Add top icon buttons support
+### 🕒 Add footer text element
+### 🕒 Add replacement for cover image with image or video
+### 🕒 Add carousel support
