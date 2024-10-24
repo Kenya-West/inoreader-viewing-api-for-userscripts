@@ -36,6 +36,7 @@ jobs:
             git checkout -b build-result
             git pull origin build-result --allow-unrelated-histories || true
             git push origin build-result
+          fi
         shell: /usr/bin/bash -e {0}
 
       - name: Checkout repository
