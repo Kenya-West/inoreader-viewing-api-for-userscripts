@@ -31,12 +31,11 @@ jobs:
           if git show-ref --quiet refs/heads/build-result; then
             echo "Branch build-result already exists."
             git checkout build-result
-            git pull origin build-result
+            git pull origin build-result --allow-unrelated-histories
           else
             git checkout -b build-result
-            git pull origin build-result || true
+            git pull origin build-result --allow-unrelated-histories || true
             git push origin build-result
-          fi
         shell: /usr/bin/bash -e {0}
 
       - name: Checkout repository
