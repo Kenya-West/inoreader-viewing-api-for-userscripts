@@ -33,8 +33,10 @@ jobs:
             git pull origin build-result
             else
             git checkout -b build-result
+            git pull origin build-result || true
             git push origin build-result
             fi
+        shell: /usr/bin/bash -e {0}
 
       - name: Checkout repository
         uses: actions/checkout@v2
