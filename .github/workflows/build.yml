@@ -21,7 +21,7 @@ jobs:
         run: npm run build:prod
 
       - name: List files in the repository
-        run: ls -R
+        run: find . -maxdepth 1
 
       - name: Setup git
         run: |
@@ -48,7 +48,7 @@ jobs:
           ref: build-result
 
       - name: List files in the repository
-        run: ls -R
+        run: find . -maxdepth 1
 
       - name: Deploy built files to result branch
         run: |
