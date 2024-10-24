@@ -20,7 +20,7 @@ jobs:
       - name: Build all packages
         run: npm run build:prod
 
-      - name: List files in the repository
+      - name: List files in the repository after build
         run: find . -maxdepth 1
 
       - name: Setup git
@@ -42,12 +42,7 @@ jobs:
           fi
         shell: /usr/bin/bash -e {0}
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: build-result
-
-      - name: List files in the repository
+      - name: List files in the repository before deploy
         run: find . -maxdepth 1
 
       - name: Deploy built files to result branch
