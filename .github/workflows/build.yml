@@ -39,6 +39,9 @@ jobs:
         with:
           ref: build-result
 
+      - name: List files in the repository
+        run: ls -R
+
       - name: Deploy built files to result branch
         run: |
           git add -f userscript
