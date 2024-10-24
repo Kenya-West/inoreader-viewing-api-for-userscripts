@@ -25,6 +25,15 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Create build-result branch if not exists
+        run: |
+          if git show-ref --quiet refs/heads/build-result; then
+          echo "Branch build-result already exists."
+          else
+          git checkout -b build-result
+          git push origin build-result
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
