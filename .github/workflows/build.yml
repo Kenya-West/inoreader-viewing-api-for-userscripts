@@ -25,20 +25,15 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create build-result branch if not exists
+      - name: Check if 'build-result' branch exists on remote
         run: |
-          git config pull.rebase false  # Set merge as the default strategy
-          if git show-ref --quiet refs/heads/build-result; then
-            echo "Branch build-result already exists."
+          if git ls-remote --exit-code --heads origin build-result; then
+            echo "Branch build-result exists on remote."
             git checkout build-result
-            git pull origin build-result --allow-unrelated-histories || true
-
-            # Automatically resolve merge conflicts by favoring local changes
-            git merge -X ours origin/build-result || git merge --abort
-
+            git pull origin build-result
           else
+            echo "Branch build-result does not exist. Creating it."
             git checkout -b build-result
-            git pull origin build-result --allow-unrelated-histories || true
             git push origin build-result
           fi
         shell: /usr/bin/bash -e {0}
