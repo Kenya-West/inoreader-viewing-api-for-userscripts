@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name userscript-typescript-template-kw
+// @name inoreader-viewing-api-for-userscripts
 // @version 1.1.0
 // @namespace http://tampermonkey.net/
 // @description Template repo using Webpack and TypeScript to build your userscript for Tampermonkey and more extensions.
