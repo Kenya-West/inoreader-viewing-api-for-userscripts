@@ -31,7 +31,8 @@ jobs:
           if git show-ref --quiet refs/heads/build-result; then
             echo "Branch build-result already exists."
             git checkout build-result
-            git pull origin build-result --allow-unrelated-histories
+            git pull origin build-result --allow-unrelated-histories || true
+            git merge --strategy-option ours || git merge --abort
           else
             git checkout -b build-result
             git pull origin build-result --allow-unrelated-histories || true
