@@ -25,10 +25,27 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Create build-result branch if not exists
+        run: |
+          git config pull.rebase false  # Set merge as the default strategy
+          if git show-ref --quiet refs/heads/build-result; then
+            echo "Branch build-result already exists."
+            git checkout build-result
+            git pull origin build-result
+          else
+            git checkout -b build-result
+            git pull origin build-result || true
+            git push origin build-result
+          fi
+        shell: /usr/bin/bash -e {0}
+
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           ref: build-result
+
+      - name: List files in the repository
+        run: ls -R
 
       - name: Deploy built files to result branch
         run: |
