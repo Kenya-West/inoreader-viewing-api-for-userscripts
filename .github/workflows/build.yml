@@ -29,7 +29,8 @@ jobs:
         run: |
           if git ls-remote --exit-code --heads origin build-result; then
             echo "Branch build-result exists on remote."
-            git checkout build-result
+            git fetch origin build-result:build-result  # Fetch and create local branch from remote
+            git checkout build-result  # Now checkout the fetched branch
             git pull origin build-result
           else
             echo "Branch build-result does not exist. Creating it."
